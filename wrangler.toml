@@ -1,11 +1,27 @@
-// === wrangler.toml ===
-/*
+# ScriptBuilder MVP - Cloudflare Configuration
+
 name = "scriptbuilder-mvp"
 compatibility_date = "2024-01-01"
 
+# Pages configuration
 pages_build_output_dir = "."
 
+# D1 Database binding
 [[d1_databases]]
 binding = "DB"
 database_name = "scriptbuilder-mvp"
-database_id = "your-database-id"
+database_id = "200262b3-1fdd-4bcb-b3d8-cf6c9a47238d"
+
+# Environment variables (set in Cloudflare dashboard)
+[vars]
+# Add any public environment variables here
+
+# Development settings
+[env.development]
+[env.development.vars]
+# Development-specific variables
+
+# Production settings  
+[env.production]
+[env.production.vars]
+# Production-specific variables
