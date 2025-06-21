@@ -1,4 +1,4 @@
-# ScriptBuilder MVP - Cloudflare Configuration
+# ScriptBuilder MVP - Cloudflare Pages Configuration
 
 name = "scriptbuilder-mvp"
 compatibility_date = "2024-01-01"
@@ -6,22 +6,20 @@ compatibility_date = "2024-01-01"
 # Pages configuration
 pages_build_output_dir = "."
 
-# D1 Database binding
-[[d1_databases]]
-binding = "DB"
-database_name = "scriptbuilder-mvp"
-database_id = "200262b3-1fdd-4bcb-b3d8-cf6c9a47238d"
-
 # Environment variables (set in Cloudflare dashboard)
 [vars]
 # Add any public environment variables here
 
-# Development settings
-[env.development]
-[env.development.vars]
-# Development-specific variables
+# Preview environment (for git branches other than main)
+[env.preview]
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "scriptbuilder-mvp"
+database_id = "200262b3-1fdd-4bcb-b3d8-cf6c9a47238d"
 
-# Production settings  
+# Production environment (for main branch)
 [env.production]
-[env.production.vars]
-# Production-specific variables
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "scriptbuilder-mvp"
+database_id = "200262b3-1fdd-4bcb-b3d8-cf6c9a47238d"
