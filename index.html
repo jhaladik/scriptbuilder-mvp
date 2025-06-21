@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScriptBuilder - MVP</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #4f46e5;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #4338ca;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .project-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .project-controls select {
+            flex: 1;
+            max-width: 300px;
+        }
+        
+        .status {
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            text-align: center;
+        }
+        
+        .status-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        
+        .status-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f4f6;
+            border-top: 2px solid #4f46e5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .structure-list {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .chapter-item {
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            background: white;
+        }
+        
+        .chapter-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subchapter-list {
+            margin-left: 1rem;
+        }
+        
+        .subchapter-item {
+            padding: 0.5rem;
+            border-left: 3px solid #e2e8f0;
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📚 ScriptBuilder - MVP</h1>
+    </div>
+    
+    <div class="container">
+        <!-- Project Management -->
+        <div class="card">
+            <h2>🗂️ Správa projektů</h2>
+            <div class="project-controls">
+                <select id="projectSelect">
+                    <option value="">-- Nový projekt --</option>
+                </select>
+                <button class="btn btn-secondary" onclick="loadProject()">📂 Načíst</button>
+                <button class="btn btn-success" onclick="saveProject()">💾 Uložit</button>
+                <button class="btn btn-primary" onclick="testConnection()">🔧 Test spojení</button>
+            </div>
+            <div id="status" class="status hidden"></div>
+        </div>
+        
+        <!-- Document Setup -->
+        <div class="card">
+            <h2>📋 Základní nastavení dokumentu</h2>
+            <div class="form-group">
+                <label for="docName">Název dokumentu</label>
+                <input type="text" id="docName" placeholder="např. Sportovní výživa">
+            </div>
+            
+            <div class="form-group">
+                <label for="docType">Typ dokumentu</label>
+                <select id="docType">
+                    <option value="skripta">Skripta</option>
+                    <option value="diplomka">Diplomová práce</option>
+                    <option value="clanek">Článek</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="chapterCount">Počet kapitol</label>
+                <input type="number" id="chapterCount" min="3" max="15" value="5">
+            </div>
+            
+            <div class="form-group">
+                <label for="subchapterCount">Podkapitol na kapitolu</label>
+                <input type="number" id="subchapterCount" min="2" max="8" value="3">
+            </div>
+            
+            <div class="form-group">
+                <label for="syllabus">Krátký popis obsahu (sylabus)</label>
+                <textarea id="syllabus" rows="4" placeholder="Popište stručně, o čem má dokument pojednávat..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="targetWords">Cílový počet slov na podkapitolu</label>
+                <input type="number" id="targetWords" min="500" max="5000" value="1500">
+            </div>
+            
+            <button class="btn btn-primary" onclick="generateStructure()">
+                <span id="genText">🤖 Generovat strukturu</span>
+                <div id="genLoading" class="loading hidden"></div>
+            </button>
+        </div>
+        
+        <!-- Generated Structure -->
+        <div class="card">
+            <h2>🏗️ Vygenerovaná struktura</h2>
+            <div id="structureDisplay">
+                <p class="status-info">Zatím nebyla vygenerována žádná struktura.</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Global state
+        let currentProject = {
+            id: null,
+            name: '',
+            type: 'skripta',
+            chapterCount: 5,
+            subchapterCount: 3,
+            syllabus: '',
+            targetWords: 1500,
+            structure: null
+        };
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProjectList();
+            loadSavedData();
+        });
+        
+        // Project Management
+        async function loadProjectList() {
+            try {
+                const response = await fetch('/api/projects');
+                if (!response.ok) throw new Error('Nepodařilo se načíst seznam projektů');
+                
+                const projects = await response.json();
+                const select = document.getElementById('projectSelect');
+                
+                // Clear existing options except first
+                select.innerHTML = '<option value="">-- Nový projekt --</option>';
+                
+                projects.forEach(project => {
+                    const option = document.createElement('option');
+                    option.value = project.id;
+                    option.textContent = `${project.name} (${new Date(project.updated_at).toLocaleDateString()})`;
+                    select.appendChild(option);
+                });
+                
+                showStatus('Seznam projektů načten', 'success');
+            } catch (error) {
+                showStatus('Chyba: ' + error.message, 'error');
+            }
+        }
+        
+        async function loadProject() {
+            const projectId = document.getElementById('projectSelect').value;
+            if (!projectId) {
+                // New project
+                resetForm();
+                showStatus('Připraven nový projekt', 'info');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/projects/${projectId}`);
+                if (!response.ok) throw new Error('Nepodařilo se načíst projekt');
+                
+                const project = await response.json();
+                
+                // Populate form
+                document.getElementById('docName').value = project.name || '';
+                document.getElementById('docType').value = project.type || 'skripta';
+                document.getElementById('chapterCount').value = project.chapterCount || 5;
+                document.getElementById('subchapterCount').value = project.subchapterCount || 3;
+                document.getElementById('syllabus').value = project.syllabus || '';
+                document.getElementById('targetWords').value = project.targetWords || 1500;
+                
+                // Update global state
+                currentProject = { ...project };
+                
+                // Display structure if exists
+                if (project.structure) {
+                    displayStructure(project.structure);
+                }
+                
+                showStatus('Projekt načten', 'success');
+            } catch (error) {
+                showStatus('Chyba: ' + error.message, 'error');
+            }
+        }
+        
+        async function saveProject() {
+            // Collect current form data
+            const projectData = {
+                id: currentProject.id,
+                name: document.getElementById('docName').value,
+                type: document.getElementById('docType').value,
+                chapterCount: parseInt(document.getElementById('chapterCount').value),
+                subchapterCount: parseInt(document.getElementById('subchapterCount').value),
+                syllabus: document.getElementById('syllabus').value,
+                targetWords: parseInt(document.getElementById('targetWords').value),
+                structure: currentProject.structure
+            };
+            
+            if (!projectData.name) {
+                showStatus('Zadejte název dokumentu', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/projects', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(projectData)
+                });
+                
+                if (!response.ok) throw new Error('Nepodařilo se uložit projekt');
+                
+                const result = await response.json();
+                currentProject.id = result.id;
+                
+                // Update project list
+                await loadProjectList();
+                document.getElementById('projectSelect').value = result.id;
+                
+                showStatus('Projekt uložen', 'success');
+            } catch (error) {
+                showStatus('Chyba: ' + error.message, 'error');
+            }
+        }
+        
+        // Structure Generation
+        async function generateStructure() {
+            const name = document.getElementById('docName').value;
+            const syllabus = document.getElementById('syllabus').value;
+            const chapterCount = parseInt(document.getElementById('chapterCount').value);
+            const subchapterCount = parseInt(document.getElementById('subchapterCount').value);
+            
+            if (!name || !syllabus) {
+                showStatus('Vyplňte název a popis dokumentu', 'error');
+                return;
+            }
+            
+            setLoading(true);
+            
+            try {
+                const response = await fetch('/api/generate-structure', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        syllabus,
+                        chapterCount,
+                        subchapterCount
+                    })
+                });
+                
+                if (!response.ok) throw new Error('Nepodařilo se vygenerovat strukturu');
+                
+                const structure = await response.json();
+                currentProject.structure = structure;
+                
+                displayStructure(structure);
+                showStatus('Struktura vygenerována', 'success');
+            } catch (error) {
+                showStatus('Chyba: ' + error.message, 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+        
+        // UI Helpers
+        function displayStructure(structure) {
+            const container = document.getElementById('structureDisplay');
+            
+            if (!structure || !structure.chapters) {
+                container.innerHTML = '<p class="status-info">Žádná struktura k zobrazení.</p>';
+                return;
+            }
+            
+            let html = '<div class="structure-list">';
+            
+            structure.chapters.forEach((chapter, index) => {
+                html += `
+                    <div class="chapter-item">
+                        <div class="chapter-title">${index + 1}. ${chapter.title}</div>
+                        <div class="subchapter-list">
+                `;
+                
+                chapter.subchapters.forEach((sub, subIndex) => {
+                    html += `<div class="subchapter-item">${index + 1}.${subIndex + 1} ${sub.title}</div>`;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.className = `status status-${type}`;
+            status.textContent = message;
+            status.classList.remove('hidden');
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                status.classList.add('hidden');
+            }, 5000);
+        }
+        
+        function setLoading(isLoading) {
+            const text = document.getElementById('genText');
+            const loading = document.getElementById('genLoading');
+            
+            if (isLoading) {
+                text.style.display = 'none';
+                loading.classList.remove('hidden');
+            } else {
+                text.style.display = 'inline';
+                loading.classList.add('hidden');
+            }
+        }
+        
+        function resetForm() {
+            document.getElementById('docName').value = '';
+            document.getElementById('docType').value = 'skripta';
+            document.getElementById('chapterCount').value = '5';
+            document.getElementById('subchapterCount').value = '3';
+            document.getElementById('syllabus').value = '';
+            document.getElementById('targetWords').value = '1500';
+            
+            currentProject = {
+                id: null,
+                name: '',
+                type: 'skripta',
+                chapterCount: 5,
+                subchapterCount: 3,
+                syllabus: '',
+                targetWords: 1500,
+                structure: null
+            };
+            
+            document.getElementById('structureDisplay').innerHTML = '<p class="status-info">Zatím nebyla vygenerována žádná struktura.</p>';
+        }
+        
+        function loadSavedData() {
+            // Load any saved data from localStorage as backup
+            const saved = localStorage.getItem('scriptbuilder-mvp');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    currentProject = { ...currentProject, ...data };
+                } catch (e) {
+                    console.log('No valid saved data');
+                }
+            }
+        }
+        
+        // Test Connection
+        async function testConnection() {
+            try {
+                const response = await fetch('/api/test');
+                if (response.ok) {
+                    showStatus('✅ Spojení s API funguje', 'success');
+                } else {
+                    throw new Error('API nedostupné');
+                }
+            } catch (error) {
+                showStatus('❌ Chyba spojení: ' + error.message, 'error');
+            }
+        }
+        
+        // Auto-save to localStorage
+        setInterval(() => {
+            localStorage.setItem('scriptbuilder-mvp', JSON.stringify(currentProject));
+        }, 30000);
+    </script>
+</body>
+</html>
